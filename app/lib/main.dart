@@ -1,39 +1,48 @@
 import 'package:flutter/material.dart';
 
-class TaskListScreen extends StatefulWidget {
-  const TaskListScreen({super.key});
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
-  _TaskListScreenState createState() => _TaskListScreenState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.green),
+    );
+  }
 }
-class Task {
-  String name;
-  bool isCompleted;
 
-  Task({required this.name, this.isCompleted = false});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _TaskListScreenState extends State<TaskListScreen> {
-  List<Task> tasks = []; // List to store tasks
+class _HomeScreenState extends State<HomeScreen> {
+  List todoList = [];
+  String singlevalue = "";
 
-  // Method to add a task
-  void addTask(String taskName) {
+  addString(content) {
     setState(() {
-      tasks.add(Task(name: taskName));
+      singlevalue = content;
     });
   }
 
-  // Method to mark a task as completed/incomplete
-  void toggleTaskCompletion(int index) {
+  addList() {
     setState(() {
-      tasks[index].isCompleted = !tasks[index].isCompleted;
+      todoList.add({"value": singlevalue});
     });
   }
 
-  // Method to remove a task
-  void removeTask(int index) {
+  deleteItem(index) {
     setState(() {
-      tasks.removeAt(index);
+      todoList.removeAt(index);
     });
   }
 
@@ -41,86 +50,123 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Task Manager App'),
+        title: Text(
+          "To-Do List",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 25,
+          ),
+        ),
+        centerTitle: true,
+        toolbarHeight: 75,
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {},
+        ),
+        elevation: 0,
       ),
-      body: Column(
-        children: [
-          // Text input field and "Add" button
-          TextField(
-            decoration: const InputDecoration(
-              hintText: 'Enter task name',
-            ),
-            onSubmitted: (value) {
-              if (value.isNotEmpty) {
-                addTask(value);
-              }
-            },
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Open a dialog to add a task
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: const Text('Add Task'),
-                    content: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Enter task name',
+      body: Container(
+        margin: EdgeInsets.all(10),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 90,
+              child: ListView.builder(
+                  itemCount: todoList.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      onSubmitted: (value) {
-                        if (value.isNotEmpty) {
-                          addTask(value);
-                          Navigator.pop(context); // Close the dialog
-                        }
-                      },
+                      color: const Color.fromARGB(255, 129, 207, 190),
+                      child: SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Container(
+                          margin: EdgeInsets.only(left: 20),
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 80,
+                                child: Text(
+                                  todoList[index]['value'].toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                  flex: 20,
+                                  child: CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: Colors.white,
+                                    child: TextButton(
+                                      onPressed: () {
+                                        deleteItem(index);
+                                      },
+                                      child: Icon(
+                                        Icons.delete,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+            ),
+            Expanded(
+                flex: 10,
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 70,
+                      child: Container(
+                        height: 40,
+                        child: TextFormField(
+                          onChanged: (content) {
+                            addString(content);
+                          },
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              fillColor: const Color.fromARGB(255, 152, 245, 172),
+                              filled: true,
+                              labelText: 'Create Task....',
+                              labelStyle: TextStyle(
+                                color: const Color.fromARGB(255, 26, 126, 48),
+                                fontWeight: FontWeight.bold,
+                              )),
+                        ),
+                      ),
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close the dialog
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close the dialog
-                          // Add task when "Add" is pressed in the dialog
-                          
-                        },
-                        child: const Text('Add'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            child: const Text('Add'),
-          ),
-          // Task list
-          Expanded(
-            child: ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: Checkbox(
-                    value: tasks[index].isCompleted,
-                    onChanged: (value) {
-                      toggleTaskCompletion(index);
-                    },
-                  ),
-                  title: Text(tasks[index].name),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      removeTask(index);
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+                    Expanded(
+                        flex: 3,
+                        child: SizedBox(
+                          width: 5,
+                        )),
+                    Expanded(
+                        flex: 27,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            addList();
+                          },
+                          child: Container(
+                              height: 15,
+                              width: double.infinity,
+                              alignment: Alignment.center,
+                              child: Text("Add")),
+                        )),
+                  ],
+                )),
+          ],
+        ),
       ),
     );
   }
